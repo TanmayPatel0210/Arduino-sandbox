@@ -1,49 +1,73 @@
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe', sans-serif;
+    box-sizing: border-box;
 }
 
 body {
-    background-color: #1e1e1e;
-    color: #f9f9f9;
+    background-color: #1c1c32;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
 }
 
-.app {
-    display: flex;
-    height: 100vh;
-    padding: 20px;
-    gap: 20px;
+#app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
 }
 
-.board {
-    flex: 2;
-    background-color: #2a2a2a;
-    border-radius: 12px;
+h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+    color: #00d5ff;
+}
+
+#board_div {
     display: flex;
-    justify-content: center;
     align-items: center;
-}
-
-.info {
-    flex: 1;
-    background-color: #252526;
+    justify-content: center;
+    background-color: #17213d;
     border-radius: 12px;
-    padding: 30px;
-    border-left: 4px solid #00979d;
+    padding: 40px;
+    min-height: 400px;
 }
 
-#title {color: #00979d; margin-bottom: 10px; font-size: 32px;}
-#type {display: inline-block; background-color: #333; padding: 6px 12px; border-radius: 4px; font-size: 14px;margin-bottom: 20px; font-weight: bold; color: #ffaa00;}
-#discription {line-height: 1.6; font-size: 18px; color: #cccccc;}
+#board {
+    background-color: #176437;
+    width: 600px;
+    height: 350px;
+    border-radius: 8px;
+    border: 3px solid #0d4a28;
+    position: relative;
+}
 
-circle[id^="connector"] {
+.pin {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
     cursor: pointer;
-    transition: fill 0.2s, r 0.2s;
+    border: 2px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: bold;
+    color: #000;
 }
 
-circle[id^="connector"]:hover {
-    fill: #ffaa00 !important;
-    r: 4 !important;
+.digital {background-color: #f0c040;}
+.analog {background-color: #e07820;}
+.power {background-color: #cc2200;}
+
+#monitor {
+    margin-top: 20px;
+    background-color: #0a0a1a;
+    border: 2px solid #00d5ff;
+    border-radius: 8px;
+    padding: 20px;
+    font-family: 'Courier New', monospace;
+    color: #00ff00;
+    font-size: 18px;
 }
