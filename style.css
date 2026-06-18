@@ -1,0 +1,54 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #1c1c32;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+}
+
+#app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+    color: #00d5ff;
+}
+
+#board_div {
+    background-color: #17213d;
+    border-radius: 12px;
+    padding: 40px;
+    min-height: 400px;
+}
+
+#board {
+    background-color: #176437;
+    width: 600px;
+    height: 350px;
+    border-radius: 8px;
+    border: 3px solid #0d4a28;
+    position: relative;
+}
+
+.pin {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #000;
+}
+
+.digital {background-color: #f0c040;}
+.analog {background-color: #e07820;}
+.power {background-color: #cc2200;}
+
