@@ -24,6 +24,9 @@ h1 {
 }
 
 #board_div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background-color: #17213d;
     border-radius: 12px;
     padding: 40px;
