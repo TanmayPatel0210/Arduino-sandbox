@@ -56,6 +56,9 @@ const pins = [
     {id: '3V3', type: 'power', x: 548, y: 314}
 ]
 
+let firstclick = null;
+let secondclick = null;
+
 const monitor = document.getElementById('monitor');
 
 pins.forEach(function(pin){
@@ -68,7 +71,26 @@ pins.forEach(function(pin){
 
     pinEl.addEventListener('click', function(){
         let data = arduinoData[pin.id];
-        monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}`;
+        if (firstclick === null) {
+            firstclick = pinEl;
+            pinEl.classList.add('selected-pin');
+            monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00d5ff;">>[SYSTEM]: Waiting for second pin to connect wire...</span>`;
+        }
+        else {
+            if (firstclick !== pinEl) {
+                monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.description}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstclick.id} to ${pinEl.id}.</span>`;
+                pinEl.classList.add('selected-pin');
+                secondclick = pinEl;
+                drawWire(firstclick, pinEl);
+            }
+            else {
+                monitor.innerHTML = `>system ready click a pin to inspect it...`
+                secondclick.classList.remove('selected-pin')
+            }
+            firstclick.classList.remove('selected-pin');
+            pinEl.classList.remove('selected-pin');
+            firstclick = null;
+        }
     });
 
     board.appendChild(pinEl);
