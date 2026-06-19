@@ -42,6 +42,38 @@ h1 {
     position: relative;
 }
 
+#toggle {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    background-color: #17213d;
+    color: #00d5ff;
+    border: 2px solid #00d5ff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s ease-in-out;
+}
+
+#toggle:hover {
+    background-color: #00d5ff;
+    color: #17213d;
+    border: 2px solid #fff;
+}
+
+#toggle:active {
+    transform: translateY(2px);
+}
+
+#toggle.wireMode {
+    background-color: #ff0055;
+    border-color: #ff0055;
+    color: #fff;
+}
+
 .pin {
     position: absolute;
     width: 24px;

@@ -56,8 +56,39 @@ const pins = [
     {id: '3V3', type: 'power', x: 548, y: 314}
 ]
 
-let firstclick = null;
-let secondclick = null;
+let firstClick = null;
+let secondClick = null;
+
+let wireMode = false;
+const toggle = document.getElementById('toggle');
+
+toggle.addEventListener('click', function() {
+    wireMode = !wireMode;
+    if (wireMode) {
+        toggle.textContent = "Current Mode: WIRE (Click to Change)";
+        toggle.classList.add("wireMode");
+    }
+    else {
+        toggle.textContent = "Current Mode: INSPECT (Click to Change)";
+        toggle.classList.remove("wireMode");
+        
+    }
+
+    if (firstClick !== null) {
+        firstClick.classList.remove('selected-pin');
+        firstClick = null;
+    }
+     if (!wireMode) {
+        monitor.innerHTML = `> System ready. Click a pin to inspect it...`;
+    } 
+    else {
+        monitor.innerHTML = `> [SYSTEM]: Wire Mode ENABLED. Click two pins to connect them.`;
+    }
+
+});
+
+
+
 
 const monitor = document.getElementById('monitor');
 
@@ -71,25 +102,42 @@ pins.forEach(function(pin){
 
     pinEl.addEventListener('click', function(){
         let data = arduinoData[pin.id];
-        if (firstclick === null) {
-            firstclick = pinEl;
+
+
+
+
+        if (wireMode === false){
+            monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}`;
+            if(firstClick !== null) {
+                firstClick.classList.remove('selected-pin');
+            }
             pinEl.classList.add('selected-pin');
-            monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00d5ff;">>[SYSTEM]: Waiting for second pin to connect wire...</span>`;
+            firstClick = pinEl
         }
+
+
+
+
+
         else {
-            if (firstclick !== pinEl) {
-                monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.description}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstclick.id} to ${pinEl.id}.</span>`;
+            if (firstClick === null) {
+                firstClick = pinEl;
                 pinEl.classList.add('selected-pin');
-                secondclick = pinEl;
-                drawWire(firstclick, pinEl);
+                monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00d5ff;">>[SYSTEM]: Waiting for second pin to connect wire...</span>`;
             }
             else {
-                monitor.innerHTML = `>system ready click a pin to inspect it...`
-                secondclick.classList.remove('selected-pin')
+                if (firstClick !== pinEl) {
+                    monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstClick.id} to ${pinEl.id}. Click on ${firstClick.id} again to detach the wire. </span>`;
+                    secondClick = pinEl;
+                   // drawWire(firstClick, pinEl);
+                }
+                else {
+                    monitor.innerHTML = `>system ready click a pin to inspect it...`
+                }
+                firstClick.classList.remove('selected-pin');
+                pinEl.classList.remove('selected-pin');
+                firstClick = null;
             }
-            firstclick.classList.remove('selected-pin');
-            pinEl.classList.remove('selected-pin');
-            firstclick = null;
         }
     });
 
