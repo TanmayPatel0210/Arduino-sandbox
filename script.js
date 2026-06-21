@@ -127,12 +127,18 @@ pins.forEach(function(pin){
             }
             else {
                 if (firstClick !== pinEl) {
-                    monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstClick.id} to ${pinEl.id}. Click on ${firstClick.id} again to detach the wire. </span>`;
-                    secondClick = pinEl;
-                   // drawWire(firstClick, pinEl);
+                    let check = validate(firstClick, pinEl);
+                    if (check.isValid === true){
+                        monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstClick.id} to ${pinEl.id}. Click on ${firstClick.id} again to detach the wire. </span>`;
+                        secondClick = pinEl;
+                        drawWire(firstClick, pinEl);
+                    }
+                    else {
+                        monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #ff0055; font-weight: bold;">> ${check.message}</span>`;
+                    }
                 }
                 else {
-                    monitor.innerHTML = `>system ready click a pin to inspect it...`
+                    monitor.innerHTML = `> [SYSTEM]: Wire Mode ENABLED. Click two pins to connect them.`
                 }
                 firstClick.classList.remove('selected-pin');
                 pinEl.classList.remove('selected-pin');
@@ -143,3 +149,56 @@ pins.forEach(function(pin){
 
     board.appendChild(pinEl);
 });
+
+function validate (pin1, pin2) {
+    let id1 = pin1.id;
+    let id2 = pin2.id;
+
+    const power = ['5V', '3V3'];
+    const ground = ['GND'];
+
+    if ((power.includes(id1) && ground.includes(id2))||(power.includes(id2) && ground.includes(id1))) {
+        return {
+            isValid: false,
+            message: `[ERROR]: Short Circuit! Connecting ${id1} directly to ${id2} would fry an Arduino board.`
+        };
+    }
+
+    if (power.includes(id1) && power.includes(id2)) {
+        return {
+            isValid: false,
+            message:`[ERROR]: This would damage the Hardware! You cannot connect ${id1} directly to ${id2}.`
+        };
+    }
+
+    if (ground.includes(id1) && ground.includes(id2)) {
+        return {
+            isValid: false,
+            message: '[WARNING]: Connecting ${id1} to ${id2} creates a useless loop.'
+        };
+    }
+
+    return {
+        isValid: true,
+        message: `[SYSTEM]: Wire successfully routed from ${id1} to ${id2}.`
+        };
+}
+
+function drawWire(pin1, pin2) {
+    let x1 = parseInt(pin1.style.left) + 12;
+    let y1 = parseInt(pin1.style.top) +12;
+    let x2 = parseInt(pin2.style.left) + 12;
+    let y2 = parseInt(pin2.style.top) + 12;
+
+    let distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    let angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+    let wire = document.createElement('div');
+    wire.className = 'wire';
+    wire.style.width = distance + 'px';
+    wire.style.left = x1 + 'px';
+    wire.style.top = y1 + 'px';
+    wire.style.transform = `rotate(${angle}deg)`;
+
+    board.appendChild(wire);
+}
