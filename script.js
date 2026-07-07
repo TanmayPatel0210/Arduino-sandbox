@@ -1,3 +1,5 @@
+const { createElement } = require("react");
+
 const board_div = document.getElementById('board_div');
 
 const board = document.createElement('div');
@@ -190,15 +192,29 @@ function drawWire(pin1, pin2) {
     let x2 = parseInt(pin2.style.left) + 12;
     let y2 = parseInt(pin2.style.top) + 12;
 
-    let distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-    let angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+    let midx = (x1 + x2) / 2;
 
-    let wire = document.createElement('div');
-    wire.className = 'wire';
-    wire.style.width = distance + 'px';
-    wire.style.left = x1 + 'px';
-    wire.style.top = y1 + 'px';
-    wire.style.transform = `rotate(${angle}deg)`;
+    let container = document.createElement('div');
+    container.id = `wire-${pin1.id}-${pin2.id}`;
+    container.className = 'wire-group';
 
-    board.appendChild(wire);
+    let seg1 = document.createElement('div');
+    seg1.className = 'wire-segment horizontal';
+    seg1.style.left = Math.min(x1, midx) + 'px';
+    seg1.style.top = y1 + 'px';
+    seg1.style.width = Math.abs(midx - x1) + 'px';
+
+    let seg2 = document.createElement('div');
+    seg2.className = 'wire-segment vertical';
+    seg2.style.left = midx + 'px';
+    seg2.style.top = Math.min(y1, y2) + 'px';
+    seg2.style.height = (Math.abs(y2 - y1) + 4) + 'px';
+
+    let seg3 = document.createElement('div');
+    seg3.className = 'wire-segment horizontal';
+    seg3.style.left = Math.min(midx, x2);
+    seg3.style.top = y2 + 'px';
+    seg3.style.width = Math.abs(x2-midx);
+
+    board.appendChild(container);
 }
