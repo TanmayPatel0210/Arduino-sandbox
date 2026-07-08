@@ -174,7 +174,7 @@ function validate (pin1, pin2) {
     if (ground.includes(id1) && ground.includes(id2)) {
         return {
             isValid: false,
-            message: '[WARNING]: Connecting ${id1} to ${id2} creates a useless loop.'
+            message: `[WARNING]: Connecting ${id1} to ${id2} creates a useless loop.`
         };
     }
 
