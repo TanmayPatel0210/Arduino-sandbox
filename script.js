@@ -1,9 +1,8 @@
-const { createElement } = ("react");
-
 const board_div = document.getElementById('board_div');
 
 const board = document.createElement('div');
 board.id = 'board';
+
 board_div.appendChild(board);
 
 const arduinoData = {
@@ -33,29 +32,31 @@ const arduinoData = {
 }
 
 const pins = [
-    {id: 'D0', type: 'digital', x: 28, y: 12},
-    {id: 'D1', type: 'digital', x: 68, y: 12},
-    {id: 'D2', type: 'digital', x: 108, y: 12},
-    {id: 'D3', type: 'digital', x: 148, y: 12},
-    {id: 'D4', type: 'digital', x: 188, y: 12},
-    {id: 'D5', type: 'digital', x: 228, y: 12},
-    {id: 'D6', type: 'digital', x: 268, y: 12},
-    {id: 'D7', type: 'digital', x: 308, y: 12},
-    {id: 'D8', type: 'digital', x: 348, y: 12},
-    {id: 'D9', type: 'digital', x: 388, y: 12},
-    {id: 'D10', type: 'digital', x: 428, y: 12},
-    {id: 'D11', type: 'digital', x: 468, y: 12},
-    {id: 'D12', type: 'digital', x: 508, y: 12},
-    {id: 'D13', type: 'digital', x: 548, y: 12},
-    {id: 'A0', type: 'analog', x: 28, y: 314},
-    {id: 'A1', type: 'analog', x: 68, y: 314},
-    {id: 'A2', type: 'analog', x: 108, y: 314},
-    {id: 'A3', type: 'analog', x: 148, y: 314},
-    {id: 'A4', type: 'analog', x: 188, y: 314},
-    {id: 'A5', type: 'analog', x: 228, y: 314},
-    {id: '5V', type: 'power', x: 468, y: 314},
-    {id: 'GND', type: 'power', x: 508, y: 314},
-    {id: '3V3', type: 'power', x: 548, y: 314}
+    {id: 'D0', type: 'digital', x: 548, y: 13},
+    {id: 'D1', type: 'digital', x: 528, y: 13},
+    {id: 'D2', type: 'digital', x: 509, y: 13},
+    {id: 'D3', type: 'digital', x: 489, y: 13},
+    {id: 'D4', type: 'digital', x: 469, y: 13},
+    {id: 'D5', type: 'digital', x: 449, y: 13},
+    {id: 'D6', type: 'digital', x: 430, y: 13},
+    {id: 'D7', type: 'digital', x: 410, y: 13},
+    {id: 'D8', type: 'digital', x: 376, y: 13},
+    {id: 'D9', type: 'digital', x: 356, y: 13},
+    {id: 'D10', type: 'digital', x: 337, y: 13},
+    {id: 'D11', type: 'digital', x: 317, y: 13},
+    {id: 'D12', type: 'digital', x: 297, y: 13},
+    {id: 'D13', type: 'digital', x: 277, y: 13},
+    {id: 'A0', type: 'analog', x: 448, y: 392},
+    {id: 'A1', type: 'analog', x: 468, y: 392},
+    {id: 'A2', type: 'analog', x: 488, y: 392},
+    {id: 'A3', type: 'analog', x: 508, y: 392},
+    {id: 'A4', type: 'analog', x: 528, y: 392},
+    {id: 'A5', type: 'analog', x: 548, y: 392},
+    {id: '5V', type: 'power', x: 349, y: 392},
+    {id: 'GND', type: 'power', x: 257, y: 13},
+    {id: 'GND', type: 'power', x: 369, y: 392},
+    {id: 'GND', type: 'power', x: 388, y: 392},
+    {id: '3V3', type: 'power', x: 329, y: 392}
 ]
 
 let firstClick = null;
@@ -100,7 +101,6 @@ pins.forEach(function(pin){
     pinEl.id = pin.id;
     pinEl.style.left = pin.x + 'px';
     pinEl.style.top = pin.y + 'px';
-    pinEl.textContent = pin.id;
 
     pinEl.addEventListener('click', function(){
         let data = arduinoData[pin.id];
@@ -224,7 +224,12 @@ function drawWire(pin1, pin2) {
         offset5 = y2-30
     }
     else {
-        offset5 = y2
+        if (y1=y2) {
+            offset5 = y2-30
+        }
+        else {
+            offset5 = y2
+        }
     }
 
 

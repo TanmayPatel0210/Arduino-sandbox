@@ -34,17 +34,13 @@ h1 {
 }
 
 #board {
-    background-color: #006468;
     width: 600px;
-    height: 350px;
-    box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    border: 2px solid #004d50;
+    height: 420px;
     position: relative;
-    background-image: 
-        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 20px 20px;
+    background-image: url('arduino.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 #toggle {
@@ -81,61 +77,26 @@ h1 {
 
 .pin {
     position: absolute;
-    width: 24px;
-    height: 24px;
-    background: #1a1a1a;
-    border: 1px solid #000;
-    border-radius: 2px;
-    color: #fff;
-    font-size: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 14px;
+    height: 14px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    color: #000;
     cursor: pointer;
-    box-shadow: inset 0 0 5px #000;
     transition: all 0.2s;
     z-index: 20;
 }
 
 .pin:hover {
-    background: #333;
-    color: #00d5ff;
-    box-shadow: 0 0 12px #00d5ff;
-    z-index: 25;
+    background: rgba(0, 213, 255, 0.4);
+    box-shadow: 0 0 10px #00d5ff;
 }
 
 .pin.selected-pin {
-    background: #500;
-    color: #ff0055;
-    box-shadow: inset 0 0 8px #ff0055;
+    background: rgba(255, 0, 85, 0.6);
+    box-shadow: 0 0 12px #ff0055;
     border-color: #ff0055 !important;
-}
-
-.usbport {
-    position: absolute;
-    top: 20px;
-    left: -10;
-    width: 45px;
-    height: 55px;
-    background: linear-gradient(to right, #d3d3d3, #efefef, #d3d3d3);
-    border: 2px solid #888;
-    border-radius: 4px;
-}
-
-.barrel-jack {
-    position: absolute;
-    bottom: 20px;
-    left: -8px;
-    width: 55px;
-    height: 45px;
-    background: #111;
-    border: 2px solid #000;
-    border-radius: 3px;
-}
-
-atmega-chip{
-    position: absolute;
-    
 }
 
 .wire-group {
