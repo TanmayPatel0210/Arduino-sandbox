@@ -34,12 +34,17 @@ h1 {
 }
 
 #board {
-    background-color: #176437;
+    background-color: #006468;
     width: 600px;
     height: 350px;
-    border-radius: 8px;
-    border: 3px solid #0d4a28;
+    box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 2px solid #004d50;
     position: relative;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
 }
 
 #toggle {
@@ -78,29 +83,59 @@ h1 {
     position: absolute;
     width: 24px;
     height: 24px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid #000;
+    background: #1a1a1a;
+    border: 1px solid #000;
+    border-radius: 2px;
+    color: #fff;
+    font-size: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 9px;
-    font-weight: bold;
-    color: #000;
-    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    box-shadow: inset 0 0 5px #000;
+    transition: all 0.2s;
+    z-index: 20;
 }
 
 .pin:hover {
-    transform: scale(1.3);
+    background: #333;
+    color: #00d5ff;
     box-shadow: 0 0 12px #00d5ff;
-    z-index: 10;
-    border-color: #fff;
+    z-index: 25;
 }
 
-.selected-pin {
-    box-shadow: 0 0 15px #ff0055, inset 0 0 10px #ff0055 !important;
+.pin.selected-pin {
+    background: #500;
+    color: #ff0055;
+    box-shadow: inset 0 0 8px #ff0055;
     border-color: #ff0055 !important;
-    transform: scale(1.2);
+}
+
+.usbport {
+    position: absolute;
+    top: 20px;
+    left: -10;
+    width: 45px;
+    height: 55px;
+    background: linear-gradient(to right, #d3d3d3, #efefef, #d3d3d3);
+    border: 2px solid #888;
+    border-radius: 4px;
+}
+
+.barrel-jack {
+    position: absolute;
+    bottom: 20px;
+    left: -8px;
+    width: 55px;
+    height: 45px;
+    background: #111;
+    border: 2px solid #000;
+    border-radius: 3px;
+}
+
+atmega-chip{
+    position: absolute;
+    
 }
 
 .wire-group {

@@ -221,7 +221,7 @@ function drawWire(pin1, pin2) {
 
     let offset5
     if (y1<y2) {
-        offset5 = y2+30
+        offset5 = y2-30
     }
     else {
         offset5 = y2
@@ -267,5 +267,6 @@ function drawWire(pin1, pin2) {
     container.appendChild(seg2);
     container.appendChild(seg3);
     container.appendChild(seg4);
+    container.appendChild(seg5);
     board.appendChild(container);
 }
