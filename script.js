@@ -187,10 +187,10 @@ function validate (pin1, pin2) {
 }
 
 function drawWire(pin1, pin2) {
-    let x1 = parseInt(pin1.style.left) + 12;
-    let y1 = parseInt(pin1.style.top) +12;
-    let x2 = parseInt(pin2.style.left) + 12;
-    let y2 = parseInt(pin2.style.top) + 12;
+    let x1 = parseInt(pin1.style.left) + 6;
+    let y1 = parseInt(pin1.style.top) +6;
+    let x2 = parseInt(pin2.style.left) + 6;
+    let y2 = parseInt(pin2.style.top) + 6;
 
     let midx = (x1 + x2) / 2;
     let midy = (y1 + y2) / 2;
@@ -220,16 +220,11 @@ function drawWire(pin1, pin2) {
     }
 
     let offset5
-    if (y1<y2) {
+    if (y1<y2 || y1==y2) {
         offset5 = y2-30
     }
     else {
-        if (y1=y2) {
-            offset5 = y2-30
-        }
-        else {
-            offset5 = y2
-        }
+        offset5 = y2
     }
 
 
@@ -240,32 +235,32 @@ function drawWire(pin1, pin2) {
     let seg1 = document.createElement('div');
     seg1.className = 'wire-segment vertical';
     seg1.style.left = x1 + 'px';
-    seg1.style.top = offset1 + 'px';
-    seg1.style.height = 30 + 'px';
+    seg1.style.top = (offset1-2) + 'px';
+    seg1.style.height = 33 + 'px';
 
     let seg2 = document.createElement('div');
     seg2.className = 'wire-segment horizontal';
     seg2.style.left = Math.min(x1, midx) + 'px';
     seg2.style.top = (y1 + offset2) + 'px';
-    seg2.style.width = Math.abs(midx - x1) + 'px';
+    seg2.style.width = ((Math.abs(midx - x1))+2) + 'px';
 
     let seg3 = document.createElement('div');
     seg3.className = 'wire-segment vertical';
     seg3.style.left = midx + 'px';
     seg3.style.top = (Math.min(y1, y2) + 30) + 'px';
-    seg3.style.height = ((Math.abs(y2 - y1)) - 60) + 'px';
+    seg3.style.height = ((Math.abs(y2 - y1)) - 58) + 'px';
 
     let seg4 = document.createElement('div');
     seg4.className = 'wire-segment horizontal';
-    seg4.style.left = Math.min(midx, x2) + 'px';
+    seg4.style.left = ((Math.min(midx, x2))-2) + 'px';
     seg4.style.top = (y2+offset4) + 'px';
-    seg4.style.width = Math.abs(x2-midx) + 'px';
+    seg4.style.width = ((Math.abs(x2-midx))+4) + 'px';
 
     let seg5 = document.createElement('div');
     seg5.className = 'wire-segment vertical';
     seg5.style.left = x2 + 'px';
-    seg5.style.top = offset5 + 'px';
-    seg5.style.height = 30 + 'px';
+    seg5.style.top = offset5-2 + 'px';
+    seg5.style.height = 32 + 'px';
 
 
     container.appendChild(seg1);
