@@ -5,6 +5,8 @@ board.id = 'board';
 
 board_div.appendChild(board);
 
+let globalWireCount = 0;
+
 const arduinoData = {
     "D0": {title: "Digital Pin 0 (RX)", type: "Serial", descrption: "Used to recieve (RX) serial data. Aviod using for standard components."},
     "D1": {title: "Digital Pin 1 (TX)", type: "Serial", descrption: "Used to transmit (TX) serial data. Aviod using for standard components."},
@@ -29,6 +31,10 @@ const arduinoData = {
     "5V": {title: "5V Power", type: "Power", descrption: "Provides a steady 5 Volts to power your bredboard and sensors."},
     "GND": {title: "Ground (GND)", type: "Power", descrption: "Completes the electrical circuit. Connect negative wires here."},
     "3V3": {title: "3.3 Power", type: "Power", descrption: "Provides a smaller 3.3 Volts for smaller, highly sensitive components."},
+    "AREF": {title: "Analog Reference", type: "Analog", descrption: "Reference voltage for the analog inputs."},
+    "IOREF": {title: "IO Reference", type: "Porwer", descrption: "Provides voltage reference with which the microcontroller operates."},
+    "RESET": {title: "RESET", type: "Power", descrption: "Brings this line LOW to reset the microcontroller."},
+    "VIN": {title: "Voltage In(VIN)", type: "Power", descrption: "Input voltage for the Arduino board."}
 }
 
 const pins = [
@@ -56,7 +62,11 @@ const pins = [
     {id: 'GND', type: 'power', x: 257, y: 13},
     {id: 'GND', type: 'power', x: 369, y: 392},
     {id: 'GND', type: 'power', x: 388, y: 392},
-    {id: '3V3', type: 'power', x: 329, y: 392}
+    {id: '3V3', type: 'power', x: 329, y: 392},
+    {id: 'AREF', type: 'analog', x: 237, y: 13},
+    {id: 'IOREF', type: 'power', x: 289, y: 392},
+    {id: 'RESET', type: 'power', x: 309, y: 392},
+    {id: 'VIN', type: 'power', x: 408, y: 392}
 ]
 
 let firstClick = null;
@@ -187,86 +197,52 @@ function validate (pin1, pin2) {
 }
 
 function drawWire(pin1, pin2) {
-    let x1 = parseInt(pin1.style.left) + 6;
-    let y1 = parseInt(pin1.style.top) +6;
+    let x1 = parseInt(pin1.style.left) + 6;     //+6 for getting it at the centre of our 12px pins
+    let y1 = parseInt(pin1.style.top) + 6;
     let x2 = parseInt(pin2.style.left) + 6;
     let y2 = parseInt(pin2.style.top) + 6;
 
-    let midx = (x1 + x2) / 2;
-    let midy = (y1 + y2) / 2;
+    let lane = globalWireCount++;       //isn't it a bit obvious what this does?
 
-    let offset1;
-    if (y1<y2) {
-        offset1 = y1
-    }
-    else {
-        offset1 = y1-30
-    }
+    let dir1 = (y1 < 150) ? -1 : 1;   //direction of segment 
+    let dir2 = (y2 < 150) ? -1 : 1;    
+    
+    let drop1 = 20 + (lane * 8);        //creates an gap between each wire
+    let drop2 = 20 + (lane * 8);
 
-    let offset2;
-    if (y1<y2) {
-        offset2 = 30
-    }
-    else {
-        offset2 = -30
-    }
+    let dy1 = y1 + (drop1 * dir1);  // insersts the direction into the drop
+    let dy2 = y2 + (drop2 * dir2);
 
-    let offset4;
-    if (y1>y2) {
-        offset4 = 30
-    }
-    else {
-        offset4 = -30
+    let midx = (x1 + x2)/2;
+    let stagger = (lane %2 === 0) ? (lane * 6) : -(lane * 6);    // if even add 6px ; if odd subtract
+    midx += stagger;
+
+    if (Math.abs(x1 - x2) < 10) {
+        midx = x1 + 30 + (lane * 10);
     }
 
-    let offset5
-    if (y1<y2 || y1==y2) {
-        offset5 = y2-30
-    }
-    else {
-        offset5 = y2
-    }
-
+    let pathString = `M ${x1} ${y1} V ${dy1} H ${midx} V ${dy2} H ${x2} V ${y2}`;   //Vector instruction (m=move to; v=draw vertically; h= horizontal line)
 
     let container = document.createElement('div');
     container.id = `wire-${pin1.id}-${pin2.id}`;
-    container.className = 'wire-group';
+    container.className = 'wire-group'
 
-    let seg1 = document.createElement('div');
-    seg1.className = 'wire-segment vertical';
-    seg1.style.left = x1 + 'px';
-    seg1.style.top = (offset1-2) + 'px';
-    seg1.style.height = 33 + 'px';
+    const xmlns = "http://www.w3.org/2000/svg";     //extra step for simplicity
+    let svg = document.createElementNS(xmlns, 'svg');       //creates the svg with namespace same as the http......(as above)
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.style.overflow = 'visible';
 
-    let seg2 = document.createElement('div');
-    seg2.className = 'wire-segment horizontal';
-    seg2.style.left = Math.min(x1, midx) + 'px';
-    seg2.style.top = (y1 + offset2) + 'px';
-    seg2.style.width = ((Math.abs(midx - x1))+2) + 'px';
+    let path = document.createElementNS(xmlns, 'path');     //element that actually draws the line
+    path.setAttribute('d', pathString);      // takes the vector instruction above and puts it in data (d) element 
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', '#00ff66');
+    path.setAttribute('stroke-width', '4');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('stroke-linecap', 'round');
+    path.style.filter = 'drop-shadow(0px 0px 4px rgba(0, 255, 102, 0.8))';
 
-    let seg3 = document.createElement('div');
-    seg3.className = 'wire-segment vertical';
-    seg3.style.left = midx + 'px';
-    seg3.style.top = (Math.min(y1, y2) + 30) + 'px';
-    seg3.style.height = ((Math.abs(y2 - y1)) - 58) + 'px';
-
-    let seg4 = document.createElement('div');
-    seg4.className = 'wire-segment horizontal';
-    seg4.style.left = ((Math.min(midx, x2))-2) + 'px';
-    seg4.style.top = (y2+offset4) + 'px';
-    seg4.style.width = ((Math.abs(x2-midx))+4) + 'px';
-
-    let seg5 = document.createElement('div');
-    seg5.className = 'wire-segment vertical';
-    seg5.style.left = x2 + 'px';
-    seg5.style.top = offset5-2 + 'px';
-    seg5.style.height = 32 + 'px';
-
-
-    container.appendChild(seg1);
-    container.appendChild(seg2);
-    container.appendChild(seg3);
-    container.appendChild(seg4);
-    container.appendChild(seg5);
+    svg.appendChild(path);
+    container.appendChild(svg);
     board.appendChild(container);
-}
+}  
