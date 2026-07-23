@@ -1,11 +1,11 @@
 const board_div = document.getElementById('board_div');
-
 const board = document.createElement('div');
 board.id = 'board';
-
 board_div.appendChild(board);
 
 let globalWireCount = 0;
+
+const activeWires = []; 
 
 const arduinoData = {
     "D0": {title: "Digital Pin 0 (RX)", type: "Serial", descrption: "Used to recieve (RX) serial data. Aviod using for standard components."},
@@ -35,7 +35,7 @@ const arduinoData = {
     "IOREF": {title: "IO Reference", type: "Porwer", descrption: "Provides voltage reference with which the microcontroller operates."},
     "RESET": {title: "RESET", type: "Power", descrption: "Brings this line LOW to reset the microcontroller."},
     "VIN": {title: "Voltage In(VIN)", type: "Power", descrption: "Input voltage for the Arduino board."}
-}
+}; 
 
 const pins = [
     {id: 'D0', type: 'digital', x: 548, y: 13},
@@ -67,14 +67,13 @@ const pins = [
     {id: 'IOREF', type: 'power', x: 289, y: 392},
     {id: 'RESET', type: 'power', x: 309, y: 392},
     {id: 'VIN', type: 'power', x: 408, y: 392}
-]
+];
 
 let firstClick = null;
 let secondClick = null;
-
 let wireMode = false;
-const toggle = document.getElementById('toggle');
 
+const toggle = document.getElementById('toggle');
 toggle.addEventListener('click', function() {
     wireMode = !wireMode;
     if (wireMode) {
@@ -84,24 +83,20 @@ toggle.addEventListener('click', function() {
     else {
         toggle.textContent = "Current Mode: INSPECT (Click to Change)";
         toggle.classList.remove("wireMode");
-        
+             
     }
-
     if (firstClick !== null) {
         firstClick.classList.remove('selected-pin');
         firstClick = null;
     }
-     if (!wireMode) {
+
+    if (!wireMode) {
         monitor.innerHTML = `> System ready. Click a pin to inspect it...`;
-    } 
+    }
     else {
         monitor.innerHTML = `> [SYSTEM]: Wire Mode ENABLED. Click two pins to connect them.`;
     }
-
 });
-
-
-
 
 const monitor = document.getElementById('monitor');
 
@@ -111,13 +106,10 @@ pins.forEach(function(pin){
     pinEl.id = pin.id;
     pinEl.style.left = pin.x + 'px';
     pinEl.style.top = pin.y + 'px';
+    
 
     pinEl.addEventListener('click', function(){
         let data = arduinoData[pin.id];
-
-
-
-
         if (wireMode === false){
             monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}`;
             if(firstClick !== null) {
@@ -126,11 +118,6 @@ pins.forEach(function(pin){
             pinEl.classList.add('selected-pin');
             firstClick = pinEl
         }
-
-
-
-
-
         else {
             if (firstClick === null) {
                 firstClick = pinEl;
@@ -144,6 +131,7 @@ pins.forEach(function(pin){
                         monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstClick.id} to ${pinEl.id}. Click on ${firstClick.id} again to detach the wire. </span>`;
                         secondClick = pinEl;
                         drawWire(firstClick, pinEl);
+                        activeWires.push({ pin1: firstClick, pin2: pinEl, lane: globalWireCount - 1 }); // Pluralized to match tracker
                     }
                     else {
                         monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #ff0055; font-weight: bold;">> ${check.message}</span>`;
@@ -158,91 +146,175 @@ pins.forEach(function(pin){
             }
         }
     });
-
     board.appendChild(pinEl);
-});
+}); 
+
 
 function validate (pin1, pin2) {
     let id1 = pin1.id;
     let id2 = pin2.id;
-
     const power = ['5V', '3V3'];
     const ground = ['GND'];
-
     if ((power.includes(id1) && ground.includes(id2))||(power.includes(id2) && ground.includes(id1))) {
         return {
             isValid: false,
             message: `[ERROR]: Short Circuit! Connecting ${id1} directly to ${id2} would fry an Arduino board.`
         };
     }
-
     if (power.includes(id1) && power.includes(id2)) {
         return {
             isValid: false,
             message:`[ERROR]: This would damage the Hardware! You cannot connect ${id1} directly to ${id2}.`
         };
     }
-
     if (ground.includes(id1) && ground.includes(id2)) {
         return {
             isValid: false,
             message: `[WARNING]: Connecting ${id1} to ${id2} creates a useless loop.`
         };
     }
-
     return {
         isValid: true,
         message: `[SYSTEM]: Wire successfully routed from ${id1} to ${id2}.`
         };
 }
 
-function drawWire(pin1, pin2) {
-    let x1 = parseInt(pin1.style.left) + 6;     //+6 for getting it at the centre of our 12px pins
-    let y1 = parseInt(pin1.style.top) + 6;
-    let x2 = parseInt(pin2.style.left) + 6;
-    let y2 = parseInt(pin2.style.top) + 6;
-
-    let lane = globalWireCount++;       //isn't it a bit obvious what this does?
-
-    let dir1 = (y1 < 150) ? -1 : 1;   //direction of segment 
-    let dir2 = (y2 < 150) ? -1 : 1;    
-    
-    let drop1 = 20 + (lane * 8);        //creates an gap between each wire
+function drawWire(pin1, pin2, existingLane = null) {
+    let boardRect = board.getBoundingClientRect();
+    let rect1 = pin1.getBoundingClientRect();
+    let rect2 = pin2.getBoundingClientRect();
+    let x1 = (rect1.left -boardRect.left) + (rect1.width / 2);
+    let y1 = (rect1.top - boardRect.top) + (rect1.height / 2);
+    let x2 = (rect2.left - boardRect.left) + (rect2.width / 2);
+    let y2 = (rect2.top - boardRect.top) + (rect2.height / 2);
+    let lane = existingLane !== null ? existingLane : globalWireCount++;
+         
+    let dir1 = (y1 < 150) ? -1 : 1; 
+    let dir2 = (y2 < 150) ? -1 : 1; 
+         
+    let drop1 = 20 + (lane * 8);
     let drop2 = 20 + (lane * 8);
-
-    let dy1 = y1 + (drop1 * dir1);  // insersts the direction into the drop
+    let dy1 = y1 + (drop1 * dir1);
     let dy2 = y2 + (drop2 * dir2);
-
     let midx = (x1 + x2)/2;
-    let stagger = (lane %2 === 0) ? (lane * 6) : -(lane * 6);    // if even add 6px ; if odd subtract
+    let stagger = (lane %2 === 0) ? (lane * 6) : -(lane * 6);
     midx += stagger;
-
-    if (Math.abs(x1 - x2) < 10) {
+    if(Math.abs(x1 - x2) < 10) {
         midx = x1 + 30 + (lane * 10);
     }
+    let pathString = `M ${x1} ${y1} V ${dy1} H ${midx} V ${dy2} H ${x2} V ${y2}`; 
 
-    let pathString = `M ${x1} ${y1} V ${dy1} H ${midx} V ${dy2} H ${x2} V ${y2}`;   //Vector instruction (m=move to; v=draw vertically; h= horizontal line)
-
+    let existingWire = document.getElementById(`wire-${pin1.id}-${pin2.id}`);
+    if (existingWire) {
+        existingWire.querySelector('path').setAttribute('d', pathString);
+        return;
+    }
     let container = document.createElement('div');
     container.id = `wire-${pin1.id}-${pin2.id}`;
-    container.className = 'wire-group'
-
-    const xmlns = "http://www.w3.org/2000/svg";     //extra step for simplicity
-    let svg = document.createElementNS(xmlns, 'svg');       //creates the svg with namespace same as the http......(as above)
+    container.className = 'wire-group';
+    const xmlns = "http://www.w3.org/2000/svg";
+    let svg = document.createElementNS(xmlns, 'svg');
     svg.setAttribute('width', '100%');
     svg.setAttribute('height', '100%');
     svg.style.overflow = 'visible';
-
-    let path = document.createElementNS(xmlns, 'path');     //element that actually draws the line
-    path.setAttribute('d', pathString);      // takes the vector instruction above and puts it in data (d) element 
+    let path = document.createElementNS(xmlns, "path");
+    path.setAttribute('d', pathString);
     path.setAttribute('fill', 'none');
     path.setAttribute('stroke', '#00ff66');
     path.setAttribute('stroke-width', '4');
     path.setAttribute('stroke-linejoin', 'round');
     path.setAttribute('stroke-linecap', 'round');
     path.style.filter = 'drop-shadow(0px 0px 4px rgba(0, 255, 102, 0.8))';
-
     svg.appendChild(path);
     container.appendChild(svg);
     board.appendChild(container);
-}  
+} 
+
+function drag(element) {
+    let isdragging = false;
+    let startx, starty, initialleft, initialtop;
+    element.addEventListener('mousedown', function(e){
+        if (e.target.classList.contains('pin')) return;
+        isdragging = true;
+        startx = e.clientX;
+        starty = e.clientY;
+        initialleft = parseInt(element.style.left) || 0;
+        initialtop = parseInt(element.style.top) || 0;
+        element.style.zIndex = 100;
+        element.style.cursor = 'grabbing';
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+        if (!isdragging) return;
+        let dx = e.clientX - startx;
+        let dy = e.clientY - starty;
+        element.style.left = (initialleft + dx) + 'px';
+        element.style.top = (initialtop + dy) + 'px';
+        activeWires.forEach(wire => {
+            drawWire(wire.pin1, wire.pin2, wire.lane);
+        });
+    });
+    
+    document.addEventListener('mouseup', function() {
+        if (isdragging) {
+            isdragging = false
+            element.style.zIndex = '';
+            element.style.cursor = 'grab';
+        }
+    });
+}
+
+arduinoData["C_PIN1"] = {title: "Component Pin", type: "I/O", descrption: "A test pin on a draggable component."};
+let testComp = document.createElement('div');
+testComp.className = 'component';
+testComp.style.left = '100px';
+testComp.style.top = '150px';
+let testPin = document.createElement('div');
+testPin.className = 'pin digital';
+testPin.id = 'C_PIN1';
+testPin.style.left = '23px';
+testPin.style.top = '23px';
+
+testPin.addEventListener('click', function() {
+    let data = arduinoData[testPin.id];
+
+    if (wireMode === false) {
+        monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br> ${data.descrption}`;
+        if(firstClick !== null) {
+            firstClick.classList.remove('selected-pin');
+        }
+        testPin.classList.add('selected-pin');
+        firstClick = testPin;
+    }
+    else {
+        if(firstClick === null) {
+            firstClick = testPin;
+            testPin.classList.add('selected-pin');
+            monitor.innerHTML = `<span style="color: #ffaa00">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00d5ff">>[SYSTEM]: Waiting for seecond pin to connect wire...</span>`;
+        }
+        else {
+            if (firstClick !== testPin) {
+                let check = validate(firstClick, testPin);
+                if (check.isValid === true){
+                    monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstClick.id} to ${testPin.id}. Click on ${firstClick.id} again to detach the wire. </span>`;
+                    secondClick = testPin;
+                    drawWire(firstClick, testPin);
+                    activeWires.push({ pin1: firstClick, pin2: testPin, lane: globalWireCount - 1 });
+                }
+                else {
+                    monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #ff0055; font-weight: bold;">> ${check.message}</span>`;
+                }
+            }
+            else {
+                monitor.innerHTML = `> [SYSTEM]: Wire Mode ENABLED. Click two pins to connect them.`
+            }
+            firstClick.classList.remove('selected-pin');
+            testPin.classList.remove('selected-pin');
+            firstClick = null;
+        }
+    }
+}); 
+
+testComp.appendChild(testPin);
+board.appendChild(testComp);
+drag(testComp);
