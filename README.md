@@ -26,3 +26,6 @@ None. This was a test for myself to see how much can I build myself. Might need 
 #How to access(demo link)
 you can clone the repo and run it locally or just vist the demo link provided below:
 demo: https://tanmaypatel0210.github.io/Arduino-sandbox/
+
+#NOTE FOR THE REVIEWER
+I need some hours approved right now so uploading this prototype. Will re-ship with the code editor and actual components. Hope you like this :) 

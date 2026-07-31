@@ -4,8 +4,9 @@ board.id = 'board';
 board_div.appendChild(board);
 
 let globalWireCount = 0;
+let selectedWirePath = null;
 
-const activeWires = []; 
+let activeWires = []; 
 
 const arduinoData = {
     "D0": {title: "Digital Pin 0 (RX)", type: "Serial", descrption: "Used to recieve (RX) serial data. Aviod using for standard components."},
@@ -128,7 +129,7 @@ pins.forEach(function(pin){
                 if (firstClick !== pinEl) {
                     let check = validate(firstClick, pinEl);
                     if (check.isValid === true){
-                        monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstClick.id} to ${pinEl.id}. Click on ${firstClick.id} again to detach the wire. </span>`;
+                        monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstClick.id} to ${pinEl.id}. Click on the wire to select and delete it. </span>`;
                         secondClick = pinEl;
                         drawWire(firstClick, pinEl);
                         activeWires.push({ pin1: firstClick, pin2: pinEl, lane: globalWireCount - 1 }); // Pluralized to match tracker
@@ -225,10 +226,49 @@ function drawWire(pin1, pin2, existingLane = null) {
     path.setAttribute('stroke-linejoin', 'round');
     path.setAttribute('stroke-linecap', 'round');
     path.style.filter = 'drop-shadow(0px 0px 4px rgba(0, 255, 102, 0.8))';
+    path.style.cursor = 'pointer';
+    path.style.pointerEvents = 'auto';
+
+    path.addEventListener('click', function(e) {
+        e.stopPropagation();
+
+        if (selectedWirePath) {
+            selectedWirePath.style.stroke = '#00ff66';
+        }
+
+        selectedWirePath = path;
+        selectedWirePath.style.stroke = '#ff0055';
+
+        monitor.innerHTML = `> [SYSTEM]: Wire selected. Press 'Delete' or 'Backspace' to detach.`;
+    });
+
     svg.appendChild(path);
     container.appendChild(svg);
     board.appendChild(container);
 } 
+
+document.addEventListener('keydown', function(e) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedWirePath) {
+        let wireContainer = selectedWirePath.closest('.wire-group');
+        let containerId = wireContainer.id;
+
+        wireContainer.remove();
+        activeWires = activeWires.filter(wire => `wire-${wire.pin1.id}-${wire.pin2.id}` !== containerId);
+
+        selectedWirePath = null;
+        monitor.innerHTML = `> [SYSTEM]: Wire successfully detached and removed. Click two pins to connect them.`;
+    }
+});
+
+document.addEventListener('click', function(e) {
+    if (selectedWirePath) {
+        selectedWirePath.style.stroke = '#00ff55';
+        selectedWirePath = null;
+        monitor.innerHTML = `>[SYSTEM]: Wire deselected. Click two pins to connect them.`;
+    }
+});
+
+
 
 function drag(element) {
     let isdragging = false;
