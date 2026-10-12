@@ -150,3 +150,64 @@ h1 {
     height: 60px;
     cursor: grab;
 }
+
+#component-dropdown, #add-btn {
+    background-color: #17213d;
+    color: #00d5ff;
+    border: 2px solid #00d5ff;
+    padding: 12px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+}
+
+#component-dropdown:hover, #add-btn:hover {
+    background-color: #00d5ff;
+    color: #17213d;
+}
+
+.led-component {
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    border: 2px solid #333;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.led-red { background-color: #4a0000; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8); }
+.led-green { background-color: #003300; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8); }
+.led-blue { background-color: #001a4d; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8); }
+.led-yellow { background-color: #4d3d00; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8); }
+
+.led-red.is-on { background-color: #ff0000; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 0 20px #ff0000; }
+.led-green.is-on { background-color: #00ff00; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 0 20px #00ff00; }
+.led-blue.is-on { background-color: #0088ff; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 0 20px #0088ff; }
+.led-yellow.is-on { background-color: #ffcc00; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 0 20px #ffcc00; }
+
+.hidden-menu {
+    display: none;
+    position: absolute;
+    background-color: #17213d;
+    border: 1px solid #00d5ff;
+    border-radius: 5px;
+    padding: 5px 0;
+    min-width: 120px;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+}
+
+.menu-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #fff;
+}
+
+.menu-item:hover { background-color: #00d5ff; color: #17213d; }
+.remove-item { color: #ff0055; }
+.remove-item:hover { background-color: #ff0055; color: #fff; }
+hr { border: 0; border-top: 1px solid #333; margin: 4px 0; }

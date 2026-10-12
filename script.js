@@ -7,6 +7,8 @@ let globalWireCount = 0;
 let selectedWirePath = null;
 
 let activeWires = []; 
+let compCount = 0;
+let currentContextMenuTarget = null;
 
 const arduinoData = {
     "D0": {title: "Digital Pin 0 (RX)", type: "Serial", descrption: "Used to recieve (RX) serial data. Aviod using for standard components."},
@@ -304,57 +306,133 @@ function drag(element) {
     });
 }
 
-arduinoData["C_PIN1"] = {title: "Component Pin", type: "I/O", descrption: "A test pin on a draggable component."};
-let testComp = document.createElement('div');
-testComp.className = 'component';
-testComp.style.left = '100px';
-testComp.style.top = '150px';
-let testPin = document.createElement('div');
-testPin.className = 'pin digital';
-testPin.id = 'C_PIN1';
-testPin.style.left = '23px';
-testPin.style.top = '23px';
+const addBtn = document.getElementById('add-btn');
+const componentDropdown = document.getElementById('component-dropdown');
+const contextMenu = document.getElementById('context-menu');
 
-testPin.addEventListener('click', function() {
-    let data = arduinoData[testPin.id];
+addBtn.addEventListener('click', function() {
+    const selectedComponent = componentDropdown.value;
 
-    if (wireMode === false) {
-        monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br> ${data.descrption}`;
-        if(firstClick !== null) {
-            firstClick.classList.remove('selected-pin');
-        }
-        testPin.classList.add('selected-pin');
-        firstClick = testPin;
+    if (selectedComponent === 'led') {
+        compCount++;
+        let compId = `LED_${compCount}`;
+
+        // Register pins for the monitor
+        arduinoData[`${compId}_A`] = { title: `LED Anode (+)` , type: "I/O", descrption: "Connect to power/digital pin." };
+        arduinoData[`${compId}_C`] = { title: `LED Cathode (-)` , type: "Ground", descrption: "Connect to GND." };
+
+        let newLed = document.createElement('div');
+        newLed.className = 'component led-component led-red'; // Defaults to red
+        newLed.id = compId;
+        newLed.style.left = '50px';
+        newLed.style.top = '50px';
+
+        // Anode Pin (+)
+        let anode = document.createElement('div');
+        anode.className = 'pin digital';
+        anode.id = `${compId}_A`;
+        anode.style.left = '10px';
+        anode.style.top = '23px';
+        attachPinListener(anode);
+
+        // Cathode Pin (-)
+        let cathode = document.createElement('div');
+        cathode.className = 'pin power';
+        cathode.id = `${compId}_C`;
+        cathode.style.left = '36px';
+        cathode.style.top = '23px';
+        attachPinListener(cathode);
+
+        newLed.appendChild(anode);
+        newLed.appendChild(cathode);
+        board.appendChild(newLed);
+        drag(newLed);
+
+        // Right-Click to open menu
+        newLed.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            currentContextMenuTarget = newLed;
+            contextMenu.style.left = e.pageX + 'px';
+            contextMenu.style.top = e.pageY + 'px';
+            contextMenu.style.display = 'block';
+        });
+        // NEW: Double-click to quickly toggle power
+        newLed.addEventListener('dblclick', function() {
+            newLed.classList.toggle('is-on');
+            let state = newLed.classList.contains('is-on') ? "ON" : "OFF";
+            monitor.innerHTML = `> [SYSTEM]: ${compId} is now ${state}.`;
+        });
+        
+        monitor.innerHTML = `> [SYSTEM]: Spawned ${compId}. Right-click it to change color or remove.`;
     }
-    else {
-        if(firstClick === null) {
-            firstClick = testPin;
-            testPin.classList.add('selected-pin');
-            monitor.innerHTML = `<span style="color: #ffaa00">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00d5ff">>[SYSTEM]: Waiting for seecond pin to connect wire...</span>`;
-        }
-        else {
-            if (firstClick !== testPin) {
-                let check = validate(firstClick, testPin);
-                if (check.isValid === true){
-                    monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstClick.id} to ${testPin.id}. Click on ${firstClick.id} again to detach the wire. </span>`;
-                    secondClick = testPin;
-                    drawWire(firstClick, testPin);
-                    activeWires.push({ pin1: firstClick, pin2: testPin, lane: globalWireCount - 1 });
-                }
-                else {
-                    monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #ff0055; font-weight: bold;">> ${check.message}</span>`;
-                }
-            }
-            else {
-                monitor.innerHTML = `> [SYSTEM]: Wire Mode ENABLED. Click two pins to connect them.`
-            }
-            firstClick.classList.remove('selected-pin');
-            testPin.classList.remove('selected-pin');
-            firstClick = null;
+});
+
+// Handle Context Menu Actions (Color change & Removal)
+// Handle Context Menu Actions (Color change, Toggle, & Removal)
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('menu-item') && currentContextMenuTarget) {
+        let action = e.target.dataset.action;
+        let compId = currentContextMenuTarget.id;
+
+        if (action === 'remove') {
+            // Find and delete all wires connected to this component
+            let wiresToRemove = activeWires.filter(w => w.pin1.id.startsWith(compId) || w.pin2.id.startsWith(compId));
+            wiresToRemove.forEach(w => {
+                let wireEl = document.getElementById(`wire-${w.pin1.id}-${w.pin2.id}`);
+                if (wireEl) wireEl.remove();
+            });
+            activeWires = activeWires.filter(w => !w.pin1.id.startsWith(compId) && !w.pin2.id.startsWith(compId));
+            
+            currentContextMenuTarget.remove();
+            monitor.innerHTML = `> [SYSTEM]: Removed ${compId} and its connected wires.`;
+            
+        } else if (action === 'toggle') {
+            // Turn LED on or off
+            currentContextMenuTarget.classList.toggle('is-on');
+            let state = currentContextMenuTarget.classList.contains('is-on') ? "ON" : "OFF";
+            monitor.innerHTML = `> [SYSTEM]: ${compId} is now ${state}.`;
+            
+        } else {
+            // Change color class, but preserve the ON/OFF state!
+            let isOn = currentContextMenuTarget.classList.contains('is-on');
+            currentContextMenuTarget.className = `component led-component led-${action} ${isOn ? 'is-on' : ''}`;
+            monitor.innerHTML = `> [SYSTEM]: Changed ${compId} color to ${action}.`;
         }
     }
-}); 
+    // Hide menu after clicking anywhere
+    contextMenu.style.display = 'none';
+});
 
-testComp.appendChild(testPin);
-board.appendChild(testComp);
-drag(testComp);
+// Reusable function for new component pins
+function attachPinListener(dynamicPin) {
+    dynamicPin.addEventListener('click', function() {
+        let data = arduinoData[dynamicPin.id];
+        
+        if (!wireMode) {
+            monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}`;
+            if (firstClick !== null) firstClick.classList.remove('selected-pin');
+            dynamicPin.classList.add('selected-pin');
+            firstClick = dynamicPin;
+        } else {
+            if (firstClick === null) {
+                firstClick = dynamicPin;
+                dynamicPin.classList.add('selected-pin');
+                monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00d5ff;">>[SYSTEM]: Waiting for second pin...</span>`;
+            } else {
+                if (firstClick !== dynamicPin) {
+                    let check = validate(firstClick, dynamicPin);
+                    if (check.isValid) {
+                        monitor.innerHTML = `<span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed.</span>`;
+                        drawWire(firstClick, dynamicPin);
+                        activeWires.push({ pin1: firstClick, pin2: dynamicPin, lane: globalWireCount - 1 });
+                    } else {
+                        monitor.innerHTML = `<span style="color: #ff0055; font-weight: bold;">> ${check.message}</span>`;
+                    }
+                }
+                firstClick.classList.remove('selected-pin');
+                dynamicPin.classList.remove('selected-pin');
+                firstClick = null;
+            }
+        }
+    });
+}
