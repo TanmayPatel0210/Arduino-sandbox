@@ -331,16 +331,16 @@ addBtn.addEventListener('click', function() {
         let anode = document.createElement('div');
         anode.className = 'pin digital';
         anode.id = `${compId}_A`;
-        anode.style.left = '10px';
-        anode.style.top = '23px';
+        anode.style.left = '7px';    /* Adjusted for new width */
+        anode.style.top = '52px';    /* Pushed down to the base */
         attachPinListener(anode);
 
         // Cathode Pin (-)
         let cathode = document.createElement('div');
         cathode.className = 'pin power';
         cathode.id = `${compId}_C`;
-        cathode.style.left = '36px';
-        cathode.style.top = '23px';
+        cathode.style.left = '25px'; /* Adjusted for new width */
+        cathode.style.top = '52px';  /* Pushed down to the base */
         attachPinListener(cathode);
 
         newLed.appendChild(anode);

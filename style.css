@@ -177,15 +177,40 @@ h1 {
     transition: background-color 0.3s, box-shadow 0.3s;
 }
 
-.led-red { background-color: #4a0000; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8); }
-.led-green { background-color: #003300; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8); }
-.led-blue { background-color: #001a4d; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8); }
-.led-yellow { background-color: #4d3d00; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8); }
+.led-component {
+    width: 46px;
+    height: 60px;
+    border-radius: 23px 23px 4px 4px;
+    border: 2px solid rgba(0,0,0,0.6);
+    border-bottom: 6px solid rgba(0,0,0,0.8); 
+    transition: background-color 0.3s, box-shadow 0.3s;
+    position: absolute;
+    cursor: grab;
+}
 
-.led-red.is-on { background-color: #ff0000; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 0 20px #ff0000; }
-.led-green.is-on { background-color: #00ff00; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 0 20px #00ff00; }
-.led-blue.is-on { background-color: #0088ff; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 0 20px #0088ff; }
-.led-yellow.is-on { background-color: #ffcc00; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 0 20px #ffcc00; }
+.led-component::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    width: 12px;
+    height: 22px;
+    background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+    border-radius: 50%;
+    transform: rotate(-15deg);
+    pointer-events: none; 
+}
+
+
+.led-red { background-color: #660000; box-shadow: inset -5px -10px 20px rgba(0,0,0,0.7); }
+.led-green { background-color: #004400; box-shadow: inset -5px -10px 20px rgba(0,0,0,0.7); }
+.led-blue { background-color: #002266; box-shadow: inset -5px -10px 20px rgba(0,0,0,0.7); }
+.led-yellow { background-color: #665500; box-shadow: inset -5px -10px 20px rgba(0,0,0,0.7); }
+
+.led-red.is-on { background-color: #ff3333; box-shadow: inset -5px -10px 20px rgba(0,0,0,0.4), 0 0 25px #ff0000; }
+.led-green.is-on { background-color: #33ff33; box-shadow: inset -5px -10px 20px rgba(0,0,0,0.4), 0 0 25px #00ff00; }
+.led-blue.is-on { background-color: #33aaff; box-shadow: inset -5px -10px 20px rgba(0,0,0,0.4), 0 0 25px #0088ff; }
+.led-yellow.is-on { background-color: #ffdd33; box-shadow: inset -5px -10px 20px rgba(0,0,0,0.4), 0 0 25px #ffcc00; }
 
 .hidden-menu {
     display: none;
