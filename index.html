@@ -5,7 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Arduino Sandbox</title>
         <link rel="stylesheet" href="style.css">
-        <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+        <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
+        <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+        <script src="https://unpkg.com/blockly/msg/en.js"></script>
     </head>
     <body>
         <div id="app">
@@ -53,7 +55,7 @@
                 <!-- EASY MODE: Blockly Workspace -->
                 <div id="blocklyDiv" style="height: 100%; width: 100%;"></div>
                 
-                <!-- ADVANCED MODE: Text Editor -->
+<!-- ADVANCED MODE: Text Editor -->
                 <textarea id="code-editor" style="display: none;" spellcheck="false">
 void setup() {
   // Initialize your pins here
@@ -67,9 +69,21 @@ void loop() {
 
             <!-- Blockly Toolbox (The menu of blocks) -->
             <xml id="toolbox" style="display: none">
+              <!-- NEW: Custom Arduino Blocks -->
+              <category name="Arduino" colour="#00979D">
+                <block type="digital_write"></block>
+                <block type="digital_read"></block>
+                <block type="servo_write"></block>
+                <block type="delay_ms"></block>
+                <block type="serial_print"></block>
+              </category>
+              
+              <!-- Standard Blocks -->
               <category name="Logic" colour="210">
                 <block type="controls_if"></block>
                 <block type="logic_compare"></block>
+                <block type="logic_operation"></block>
+                <block type="logic_boolean"></block>
               </category>
               <category name="Loops" colour="120">
                 <block type="controls_repeat_ext"></block>
@@ -79,6 +93,12 @@ void loop() {
                 <block type="math_number"></block>
                 <block type="math_arithmetic"></block>
               </category>
+              <category name="Text" colour="160">
+                <block type="text"></block>
+                <block type="text_join"></block>
+              </category>
+              <!-- Built-in Variables Engine -->
+              <category name="Variables" colour="330" custom="VARIABLE"></category>
             </xml>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>

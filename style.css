@@ -352,3 +352,8 @@ hr { border: 0; border-top: 1px solid #333; margin: 4px 0; }
 .blocklyToolboxDiv {
     background-color: #17213d !important;
 }
+/* Make Blockly Toolbox text readable in dark mode */
+.blocklyTreeLabel {
+    color: #fff !important;
+    font-family: 'Courier New', monospace;
+}

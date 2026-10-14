@@ -565,12 +565,110 @@ function attachPinListener(dynamicPin) {
         }
     });
 }
-// EDITOR: Easy/Advanced Mode Toggle & Setup
 
+// ==========================================
+// EDITOR: Easy/Advanced Mode Toggle & Setup
+// ==========================================
 const tabEasy = document.getElementById('tab-easy');
 const tabAdv = document.getElementById('tab-adv');
 const blocklyDiv = document.getElementById('blocklyDiv');
 const codeEditor = document.getElementById('code-editor');
+
+// --- CUSTOM ARDUINO BLOCKS ---
+// 1. The Main Setup/Loop Wrapper
+Blockly.Blocks['arduino_setup_loop'] = {
+    init: function() {
+        this.appendDummyInput().appendField("Arduino Program");
+        this.appendStatementInput("SETUP").setCheck(null).appendField("Setup (Runs once)");
+        this.appendStatementInput("LOOP").setCheck(null).appendField("Loop (Runs forever)");
+        this.setColour('#005c5f');
+        this.setTooltip("The main structure of your Arduino code.");
+        this.setDeletable(false); // Kids can't accidentally delete the main board!
+    }
+};
+
+// 2. Set Pin to HIGH/LOW
+Blockly.Blocks['digital_write'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("Set Pin")
+            .appendField(new Blockly.FieldDropdown([
+                ["13", "13"], ["12", "12"], ["11 (~)", "11"], 
+                ["10 (~)", "10"], ["9 (~)", "9"], ["8", "8"], 
+                ["7", "7"], ["6 (~)", "6"], ["5 (~)", "5"], 
+                ["4", "4"], ["3 (~)", "3"], ["2", "2"]
+            ]), "PIN")
+            .appendField("to")
+            .appendField(new Blockly.FieldDropdown([["HIGH (ON)", "HIGH"], ["LOW (OFF)", "LOW"]]), "STATE");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#00979D'); // Arduino teal color
+        this.setTooltip("Turns a digital pin ON (HIGH) or OFF (LOW).");
+    }
+};
+
+// 3. Delay (Wait)
+Blockly.Blocks['delay_ms'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("Wait for")
+            .appendField(new Blockly.FieldNumber(1000, 0), "DELAY")
+            .appendField("milliseconds");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#cc7a00'); // Orange for timing blocks
+        this.setTooltip("Pauses the code for a specific amount of time.");
+    }
+};
+
+// 4. Servo Write (Rotate)
+Blockly.Blocks['servo_write'] = {
+    init: function() {
+        this.appendValueInput("ANGLE")
+            .setCheck("Number")
+            .appendField("Rotate Servo on Pin")
+            .appendField(new Blockly.FieldDropdown([
+                ["11 (~)", "11"], ["10 (~)", "10"], ["9 (~)", "9"], 
+                ["6 (~)", "6"], ["5 (~)", "5"], ["3 (~)", "3"]
+            ]), "PIN")
+            .appendField("to");
+        this.appendDummyInput().appendField("degrees");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#004488'); // Dark blue to match he physicatl servo
+        this.setTooltip("Rotates a servo motor to a specific angle (0-180).");
+    }
+};
+
+// 5. Digital Read (For Buttons)
+Blockly.Blocks['digital_read'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("Read Digital Pin")
+            .appendField(new Blockly.FieldDropdown([
+                ["13", "13"], ["12", "12"], ["11 (~)", "11"], 
+                ["10 (~)", "10"], ["9 (~)", "9"], ["8", "8"], 
+                ["7", "7"], ["6 (~)", "6"], ["5 (~)", "5"], 
+                ["4", "4"], ["3 (~)", "3"], ["2", "2"]
+            ]), "PIN");
+        this.setOutput(true, ["Number", "Boolean"]);
+        this.setColour('#00979D');
+        this.setTooltip("Reads the value of a digital pin (Returns HIGH or LOW).");
+    }
+};
+
+// 6. Serial Print (For debugging/output)
+Blockly.Blocks['serial_print'] = {
+    init: function() {
+        this.appendValueInput("TEXT")
+            .appendField("Print to Serial Monitor:");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#555555');
+        this.setTooltip("Prints text or numbers to the console.");
+    }
+};
+
 
 // Inject Google Blockly
 let workspace = Blockly.inject('blocklyDiv', {
@@ -579,6 +677,12 @@ let workspace = Blockly.inject('blocklyDiv', {
     trashcan: true
 });
 
+// Automatically place the main Setup/Loop block on the canvas
+let defaultBlock = workspace.newBlock('arduino_setup_loop');
+defaultBlock.initSvg();
+defaultBlock.render();
+defaultBlock.moveBy(20, 20); // Push it slightly down and right so it looks neat
+
 // Toggle to Easy Mode
 tabEasy.addEventListener('click', () => {
     tabEasy.classList.add('active-tab');
@@ -586,7 +690,6 @@ tabEasy.addEventListener('click', () => {
     blocklyDiv.style.display = 'block';
     codeEditor.style.display = 'none';
     
-    // Blockly needs to resize when it becomes visible again
     Blockly.svgResize(workspace); 
     monitor.innerHTML = `> [SYSTEM]: Switched to EASY MODE (Block Coding).`;
 });
