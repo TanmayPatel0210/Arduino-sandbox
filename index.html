@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Arduino Sandbox</title>
         <link rel="stylesheet" href="style.css">
+        <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     </head>
     <body>
         <div id="app">
@@ -14,22 +15,27 @@
 
             <button id="toggle"> Current Mode: INSPECT (Click to Change)</button>
 
-            <div id="controls" style="margin-top: 20px; display: lex; gap: 10px; align-items: center;">
+            <div id="controls" style="margin-top: 20px; display: flex; gap: 10px; align-items: center;">
                 <select id="component-dropdown">
-                    <option value="led">LED</option>
+                    <option value="led">LED (5mm)</option>
+                    <option value="button">Push Button</option>
+                    <option value="servo">Servo Motor (SG90)</option>
                 </select>
                 <button id="add-btn">Add Component</button>
             </div>
 
             <div id="context-menu" class="hidden-menu">
-                <div class="menu-item" style="color: #00ff66;" data-action="toggle">Toggle ON / OFF</div>
-                <hr>
-                <div class="menu-item" data-action="red">Make Red</div>
-                <div class="menu-item" data-action="green">Make Green</div>
-                <div class="menu-item" data-action="blue">Make Blue</div>
-                <div class="menu-item" data-action="yellow">Make Yellow</div>
-                <hr>
-                <div class="menu-item remove-item" data-action="remove">Remove LED</div>
+                <div class="menu-item led-opt" style="color: #00ff66;" data-action="toggle">Toggle ON / OFF</div>
+                <hr class="led-opt hr-opt">
+                <div class="menu-item led-opt" data-action="red">Make Red</div>
+                <div class="menu-item led-opt" data-action="green">Make Green</div>
+                <div class="menu-item led-opt" data-action="blue">Make Blue</div>
+                <div class="menu-item led-opt" data-action="yellow">Make Yellow</div>
+                
+                <div class="menu-item servo-opt" style="color: #00d5ff;" data-action="rotate-servo">Test Rotation (45°)</div>
+                <hr class="hr-opt">
+                
+                <div class="menu-item remove-item" data-action="remove">Remove Component</div>
             </div>
 
 
@@ -37,8 +43,8 @@
                 >system ready click a pin to inspect it...
             </div>
             <div id="editor-container" style="width: 100%; height: 400px; margin-top: 20px; border: 2px solid #00d5ff; border-radius: 8px; overflow: hidden;"></div>
-
-        </div>
+                
+            </div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
         <script src="script.js"></script>

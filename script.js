@@ -313,34 +313,34 @@ const contextMenu = document.getElementById('context-menu');
 addBtn.addEventListener('click', function() {
     const selectedComponent = componentDropdown.value;
 
+    // 1. LED COMPONENT
+
     if (selectedComponent === 'led') {
         compCount++;
         let compId = `LED_${compCount}`;
 
-        // Register pins for the monitor
         arduinoData[`${compId}_A`] = { title: `LED Anode (+)` , type: "I/O", descrption: "Connect to power/digital pin." };
         arduinoData[`${compId}_C`] = { title: `LED Cathode (-)` , type: "Ground", descrption: "Connect to GND." };
 
         let newLed = document.createElement('div');
-        newLed.className = 'component led-component led-red'; // Defaults to red
+        newLed.className = 'component led-component led-red'; 
         newLed.id = compId;
         newLed.style.left = '50px';
         newLed.style.top = '50px';
+        newLed.dataset.type = 'led'; // Used to filter the right-click menu
 
-        // Anode Pin (+)
         let anode = document.createElement('div');
         anode.className = 'pin digital';
         anode.id = `${compId}_A`;
-        anode.style.left = '7px';    /* Adjusted for new width */
-        anode.style.top = '52px';    /* Pushed down to the base */
+        anode.style.left = '7px';
+        anode.style.top = '52px';
         attachPinListener(anode);
 
-        // Cathode Pin (-)
         let cathode = document.createElement('div');
         cathode.className = 'pin power';
         cathode.id = `${compId}_C`;
-        cathode.style.left = '25px'; /* Adjusted for new width */
-        cathode.style.top = '52px';  /* Pushed down to the base */
+        cathode.style.left = '25px';
+        cathode.style.top = '52px';
         attachPinListener(cathode);
 
         newLed.appendChild(anode);
@@ -348,34 +348,157 @@ addBtn.addEventListener('click', function() {
         board.appendChild(newLed);
         drag(newLed);
 
-        // Right-Click to open menu
-        newLed.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            currentContextMenuTarget = newLed;
-            contextMenu.style.left = e.pageX + 'px';
-            contextMenu.style.top = e.pageY + 'px';
-            contextMenu.style.display = 'block';
-        });
-        // NEW: Double-click to quickly toggle power
+        newLed.addEventListener('contextmenu', function(e) { e.preventDefault(); openContextMenu(e, newLed); });
         newLed.addEventListener('dblclick', function() {
             newLed.classList.toggle('is-on');
             let state = newLed.classList.contains('is-on') ? "ON" : "OFF";
             monitor.innerHTML = `> [SYSTEM]: ${compId} is now ${state}.`;
         });
         
-        monitor.innerHTML = `> [SYSTEM]: Spawned ${compId}. Right-click it to change color or remove.`;
+        monitor.innerHTML = `> [SYSTEM]: Spawned ${compId}.`;
+    }
+    
+    // 2. PUSH BUTTON COMPONENT
+
+    else if (selectedComponent === 'button') {
+        compCount++;
+        let compId = `BTN_${compCount}`;
+
+        arduinoData[`${compId}_1`] = { title: `Button Terminal 1`, type: "I/O", descrption: "Digital input/output terminal." };
+        arduinoData[`${compId}_2`] = { title: `Button Terminal 2`, type: "I/O", descrption: "Digital input/output terminal." };
+
+        let newBtn = document.createElement('div');
+        newBtn.className = 'component button-component';
+        newBtn.id = compId;
+        newBtn.style.left = '120px';
+        newBtn.style.top = '120px';
+        newBtn.dataset.type = 'button';
+
+        let btnCenter = document.createElement('div');
+        btnCenter.className = 'button-center';
+        newBtn.appendChild(btnCenter);
+
+        let t1 = document.createElement('div');
+        t1.className = 'pin digital';
+        t1.id = `${compId}_1`;
+        t1.style.left = '-7px';
+        t1.style.top = '18px';
+        attachPinListener(t1);
+
+        let t2 = document.createElement('div');
+        t2.className = 'pin digital';
+        t2.id = `${compId}_2`;
+        t2.style.left = '43px';
+        t2.style.top = '18px';
+        attachPinListener(t2);
+
+        newBtn.appendChild(t1);
+        newBtn.appendChild(t2);
+        board.appendChild(newBtn);
+        drag(newBtn);
+
+        // Hardware press logic
+        newBtn.addEventListener('mousedown', () => {
+            newBtn.classList.add('is-pressed');
+            monitor.innerHTML = `> [SYSTEM]: ${compId} is PRESSED.`;
+        });
+        document.addEventListener('mouseup', () => {
+            if (newBtn.classList.contains('is-pressed')) {
+                newBtn.classList.remove('is-pressed');
+                monitor.innerHTML = `> [SYSTEM]: ${compId} is RELEASED.`;
+            }
+        });
+
+        newBtn.addEventListener('contextmenu', function(e) { e.preventDefault(); openContextMenu(e, newBtn); });
+        monitor.innerHTML = `> [SYSTEM]: Spawned ${compId}. Click and hold to press.`;
+    }
+
+    // 3. SERVO MOTOR COMPONENT
+
+    else if (selectedComponent === 'servo') {
+        compCount++;
+        let compId = `SRV_${compCount}`;
+
+        // Standard 3-wire servo configuration
+        arduinoData[`${compId}_GND`] = { title: `Servo GND (Brown)`, type: "Ground", descrption: "Connect to GND." };
+        arduinoData[`${compId}_VCC`] = { title: `Servo VCC (Red)`, type: "Power", descrption: "Connect to 5V." };
+        arduinoData[`${compId}_PWM`] = { title: `Servo Signal (Orange)`, type: "PWM", descrption: "Connect to a PWM pin (~)." };
+
+        let newServo = document.createElement('div');
+        newServo.className = 'component servo-component';
+        newServo.id = compId;
+        newServo.style.left = '200px';
+        newServo.style.top = '200px';
+        newServo.dataset.type = 'servo';
+
+        let horn = document.createElement('div');
+        horn.className = 'servo-horn';
+        horn.dataset.angle = '0'; // Custom tracking for rotation state
+        
+        let hub = document.createElement('div');
+        hub.className = 'servo-hub';
+        horn.appendChild(hub);
+        newServo.appendChild(horn);
+
+        let pGnd = document.createElement('div');
+        pGnd.className = 'pin power';
+        pGnd.id = `${compId}_GND`;
+        pGnd.style.left = '8px'; pGnd.style.top = '33px';
+        pGnd.style.backgroundColor = '#5c4033'; // Brown wire
+        attachPinListener(pGnd);
+
+        let pVcc = document.createElement('div');
+        pVcc.className = 'pin power';
+        pVcc.id = `${compId}_VCC`;
+        pVcc.style.left = '23px'; pVcc.style.top ='33px';
+        pVcc.style.backgroundColor = '#ff0000'; // Red wire
+        attachPinListener(pVcc);
+
+        let pPwm = document.createElement('div');
+        pPwm.className = 'pin analog';
+        pPwm.id = `${compId}_PWM`;
+        pPwm.style.left = '38px'; pPwm.style.top = '33px';
+        pPwm.style.backgroundColor = '#ff8800'; // Orange wire
+        attachPinListener(pPwm);
+
+        newServo.appendChild(pGnd);
+        newServo.appendChild(pVcc);
+        newServo.appendChild(pPwm);
+        board.appendChild(newServo);
+        drag(newServo);
+
+        newServo.addEventListener('contextmenu', function(e) { e.preventDefault(); openContextMenu(e, newServo); });
+        monitor.innerHTML = `> [SYSTEM]: Spawned ${compId}. Right-click to test rotation.`;
     }
 });
 
-// Handle Context Menu Actions (Color change & Removal)
-// Handle Context Menu Actions (Color change, Toggle, & Removal)
+// Smart Context Menu Router (Shows/Hides specific options)
+function openContextMenu(e, targetComp) {
+    currentContextMenuTarget = targetComp;
+    let type = targetComp.dataset.type || 'led';
+    
+    // Hide all unique options first
+    document.querySelectorAll('.led-opt, .servo-opt, .hr-opt').forEach(item => item.style.display = 'none');
+
+    // Reveal options based on component type
+    if (type === 'led') {
+        document.querySelectorAll('.led-opt, .hr-opt').forEach(el => el.style.display = 'block');
+    } else if (type === 'servo') {
+        document.querySelectorAll('.servo-opt, .hr-opt').forEach(el => el.style.display = 'block');
+    }
+
+    contextMenu.style.left = e.pageX + 'px';
+    contextMenu.style.top = e.pageY + 'px';
+    contextMenu.style.display = 'block';
+}
+
+// Global Context Menu Click Handler
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('menu-item') && currentContextMenuTarget) {
         let action = e.target.dataset.action;
         let compId = currentContextMenuTarget.id;
 
         if (action === 'remove') {
-            // Find and delete all wires connected to this component
             let wiresToRemove = activeWires.filter(w => w.pin1.id.startsWith(compId) || w.pin2.id.startsWith(compId));
             wiresToRemove.forEach(w => {
                 let wireEl = document.getElementById(`wire-${w.pin1.id}-${w.pin2.id}`);
@@ -387,23 +510,29 @@ document.addEventListener('click', function(e) {
             monitor.innerHTML = `> [SYSTEM]: Removed ${compId} and its connected wires.`;
             
         } else if (action === 'toggle') {
-            // Turn LED on or off
             currentContextMenuTarget.classList.toggle('is-on');
             let state = currentContextMenuTarget.classList.contains('is-on') ? "ON" : "OFF";
             monitor.innerHTML = `> [SYSTEM]: ${compId} is now ${state}.`;
             
-        } else {
-            // Change color class, but preserve the ON/OFF state!
+        } else if (action === 'rotate-servo') {
+            let horn = currentContextMenuTarget.querySelector('.servo-horn');
+            let currentRot = parseInt(horn.dataset.angle);
+            currentRot = (currentRot + 45) % 180; // Sweeps in 45 degree increments
+            horn.dataset.angle = currentRot;
+            horn.style.transform = `rotate(${currentRot}deg)`;
+            monitor.innerHTML = `> [SYSTEM]: ${compId} rotated to ${currentRot}°.`;
+
+        } else { // LED Color change
             let isOn = currentContextMenuTarget.classList.contains('is-on');
             currentContextMenuTarget.className = `component led-component led-${action} ${isOn ? 'is-on' : ''}`;
+            currentContextMenuTarget.dataset.type = 'led'; 
             monitor.innerHTML = `> [SYSTEM]: Changed ${compId} color to ${action}.`;
         }
     }
-    // Hide menu after clicking anywhere
     contextMenu.style.display = 'none';
 });
 
-// Reusable function for new component pins
+// Reusable Pin Connection Logic
 function attachPinListener(dynamicPin) {
     dynamicPin.addEventListener('click', function() {
         let data = arduinoData[dynamicPin.id];

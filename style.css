@@ -236,3 +236,68 @@ h1 {
 .remove-item { color: #ff0055; }
 .remove-item:hover { background-color: #ff0055; color: #fff; }
 hr { border: 0; border-top: 1px solid #333; margin: 4px 0; }
+
+.button-component {
+    width: 50px;
+    height: 50px;
+    background-color: #17213d;
+    border: 2px solid #00d5ff;
+    border-radius: 8px;
+    position: absolute;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.button-center {
+    width: 26px;
+    height: 26px;
+    background-color: #0a0a1a;
+    border: 2px solid #555;
+    border-radius: 50%;
+    transition: transform 0.1s, background-color 0.1s, box-shadow 0.1s;
+}
+
+.button-component.is-pressed .button-center {
+    background-color: #ffaa00;
+    border-color: #ffaa00;
+    box-shadow: 0 0 10px #ffaa00;
+    transform: scale(0.85); 
+}
+
+.servo-component {
+    width: 60px;
+    height: 40px;
+    background-color: #004488;
+    border: 2px solid #002244;
+    border-radius: 4px;
+    position: absolute;
+    cursor: grab;
+    box-shadow: 2px 4px 10px rgba(0,0,0,0.5);
+}
+
+.servo-horn {
+    position: absolute;
+    top: -12px;
+    left: 10px;
+    width: 40px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    transform-origin: center;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Snappy mechanical bounce */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.servo-hub {
+    width: 8px;
+    height: 8px;
+    background-color: #bbb;
+    border-radius: 50%;
+    border: 1px solid #888;
+}
