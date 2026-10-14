@@ -42,9 +42,44 @@
             <div id="monitor">
                 >system ready click a pin to inspect it...
             </div>
-            <div id="editor-container" style="width: 100%; height: 400px; margin-top: 20px; border: 2px solid #00d5ff; border-radius: 8px; overflow: hidden;"></div>
-                
+            <!-- Dual-Mode Editor Section -->
+            <div id="mode-tabs">
+                <button id="tab-easy" class="active-tab">EASY (Blocks)</button>
+                <button id="tab-adv">ADVANCED (C++ Code)</button>
             </div>
+            
+            <div id="editor-container" style="width: 100%; height: 400px; border: 2px solid #00d5ff; border-radius: 0 8px 8px 8px; overflow: hidden; background-color: #0a0a1a;">
+                
+                <!-- EASY MODE: Blockly Workspace -->
+                <div id="blocklyDiv" style="height: 100%; width: 100%;"></div>
+                
+                <!-- ADVANCED MODE: Text Editor -->
+                <textarea id="code-editor" style="display: none;" spellcheck="false">
+void setup() {
+  // Initialize your pins here
+}
+
+void loop() {
+  // Write your main code here
+}
+                </textarea>
+            </div>
+
+            <!-- Blockly Toolbox (The menu of blocks) -->
+            <xml id="toolbox" style="display: none">
+              <category name="Logic" colour="210">
+                <block type="controls_if"></block>
+                <block type="logic_compare"></block>
+              </category>
+              <category name="Loops" colour="120">
+                <block type="controls_repeat_ext"></block>
+                <block type="controls_whileUntil"></block>
+              </category>
+              <category name="Math" colour="230">
+                <block type="math_number"></block>
+                <block type="math_arithmetic"></block>
+              </category>
+            </xml>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
         <script src="script.js"></script>

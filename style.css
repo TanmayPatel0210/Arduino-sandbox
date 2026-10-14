@@ -301,3 +301,54 @@ hr { border: 0; border-top: 1px solid #333; margin: 4px 0; }
     border-radius: 50%;
     border: 1px solid #888;
 }
+
+/* --- Dual-Mode Editor Tabs --- */
+#mode-tabs {
+    display: flex;
+    margin-top: 30px;
+}
+
+#mode-tabs button {
+    background-color: #17213d;
+    color: #555;
+    border: 2px solid #00d5ff;
+    border-bottom: none;
+    padding: 10px 20px;
+    border-radius: 8px 8px 0 0;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+#mode-tabs button:hover {
+    color: #00d5ff;
+}
+
+#mode-tabs button.active-tab {
+    background-color: #00d5ff;
+    color: #1c1c32;
+}
+
+/* --- Advanced Text Editor --- */
+#code-editor {
+    width: 100%;
+    height: 100%;
+    background-color: #0a0a1a;
+    color: #00ff66;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    padding: 15px;
+    border: none;
+    resize: none;
+    outline: none;
+}
+
+/* Override Google Blockly's default white background for dark mode */
+.blocklySvg {
+    background-color: #0a0a1a !important;
+}
+.blocklyToolboxDiv {
+    background-color: #17213d !important;
+}

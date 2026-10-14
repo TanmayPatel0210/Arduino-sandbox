@@ -565,3 +565,37 @@ function attachPinListener(dynamicPin) {
         }
     });
 }
+// EDITOR: Easy/Advanced Mode Toggle & Setup
+
+const tabEasy = document.getElementById('tab-easy');
+const tabAdv = document.getElementById('tab-adv');
+const blocklyDiv = document.getElementById('blocklyDiv');
+const codeEditor = document.getElementById('code-editor');
+
+// Inject Google Blockly
+let workspace = Blockly.inject('blocklyDiv', {
+    toolbox: document.getElementById('toolbox'),
+    grid: {spacing: 20, length: 3, colour: '#333', snap: true},
+    trashcan: true
+});
+
+// Toggle to Easy Mode
+tabEasy.addEventListener('click', () => {
+    tabEasy.classList.add('active-tab');
+    tabAdv.classList.remove('active-tab');
+    blocklyDiv.style.display = 'block';
+    codeEditor.style.display = 'none';
+    
+    // Blockly needs to resize when it becomes visible again
+    Blockly.svgResize(workspace); 
+    monitor.innerHTML = `> [SYSTEM]: Switched to EASY MODE (Block Coding).`;
+});
+
+// Toggle to Advanced Mode
+tabAdv.addEventListener('click', () => {
+    tabAdv.classList.add('active-tab');
+    tabEasy.classList.remove('active-tab');
+    blocklyDiv.style.display = 'none';
+    codeEditor.style.display = 'block';
+    monitor.innerHTML = `> [SYSTEM]: Switched to ADVANCED MODE (C++ Coding).`;
+});
