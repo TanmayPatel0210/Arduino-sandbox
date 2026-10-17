@@ -3,6 +3,59 @@ const board = document.createElement('div');
 board.id = 'board';
 board_div.appendChild(board);
 
+// --- Camera & Zoom State ---
+let currentScale = 0.8; // Defaults to 80% (making the board appear smaller)
+let panX = -1350; // Centers the camera on the 4000px canvas
+let panY = -1600;
+let isPanning = false;
+let startPanX, startPanY;
+
+board.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`;
+
+// Panning Logic (Click and drag the background)
+board_div.addEventListener('mousedown', (e) => {
+    if (e.target === board || e.target === board_div) {
+        isPanning = true;
+        startPanX = e.clientX - panX;
+        startPanY = e.clientY - panY;
+        board_div.style.cursor = 'grabbing';
+    }
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (isPanning) {
+        panX = e.clientX - startPanX;
+        panY = e.clientY - startPanY;
+        board.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`;
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    isPanning = false;
+    board_div.style.cursor = 'default';
+});
+
+// Zoom Controls
+document.getElementById('btn-zoom-in').addEventListener('click', () => {
+    currentScale = Math.min(currentScale + 0.1, 2.0); // Max zoom 200%
+    board.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`;
+    activeWires.forEach(wire => drawWire(wire.pin1, wire.pin2, wire.lane));
+});
+
+document.getElementById('btn-zoom-out').addEventListener('click', () => {
+    currentScale = Math.max(currentScale - 0.1, 0.4); // Min zoom 40%
+    board.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`;
+    activeWires.forEach(wire => drawWire(wire.pin1, wire.pin2, wire.lane));
+});
+
+// --- Spawn the Snappable Arduino ---
+const arduinoDev = document.createElement('div');
+arduinoDev.className = 'arduino-device';
+arduinoDev.style.left = '1700px'; // Placed perfectly in the center of the 4000px grid
+arduinoDev.style.top = '1800px';
+board.appendChild(arduinoDev);
+drag(arduinoDev);
+
 let globalWireCount = 0;
 let selectedWirePath = null;
 
@@ -134,7 +187,7 @@ pins.forEach(function(pin){
                         monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #00ff00;">> [SYSTEM]: Wire successfully routed from ${firstClick.id} to ${pinEl.id}. Click on the wire to select and delete it. </span>`;
                         secondClick = pinEl;
                         drawWire(firstClick, pinEl);
-                        activeWires.push({ pin1: firstClick, pin2: pinEl, lane: globalWireCount - 1 }); // Pluralized to match tracker
+                        activeWires.push({ pin1: firstClick, pin2: pinEl, lane: globalWireCount - 1 }); 
                     }
                     else {
                         monitor.innerHTML = `<span style="color: #ffaa00;">> ${data.title} [${data.type}]</span><br>> ${data.descrption}<br><br><span style="color: #ff0055; font-weight: bold;">> ${check.message}</span>`;
@@ -149,7 +202,7 @@ pins.forEach(function(pin){
             }
         }
     });
-    board.appendChild(pinEl);
+    arduinoDev.appendChild(pinEl);
 }); 
 
 
@@ -179,39 +232,67 @@ function validate (pin1, pin2) {
     return {
         isValid: true,
         message: `[SYSTEM]: Wire successfully routed from ${id1} to ${id2}.`
-        };
+    };
 }
 
 function drawWire(pin1, pin2, existingLane = null) {
     let boardRect = board.getBoundingClientRect();
     let rect1 = pin1.getBoundingClientRect();
     let rect2 = pin2.getBoundingClientRect();
-    let x1 = (rect1.left -boardRect.left) + (rect1.width / 2);
-    let y1 = (rect1.top - boardRect.top) + (rect1.height / 2);
-    let x2 = (rect2.left - boardRect.left) + (rect2.width / 2);
-    let y2 = (rect2.top - boardRect.top) + (rect2.height / 2);
+    
+    // 1. Get global pin coordinates (Un-scaled for the SVG engine)
+    let x1 = ((rect1.left - boardRect.left) / currentScale) + ((rect1.width / currentScale) / 2);
+    let y1 = ((rect1.top - boardRect.top) / currentScale) + ((rect1.height / currentScale) / 2);
+    let x2 = ((rect2.left - boardRect.left) / currentScale) + ((rect2.width / currentScale) / 2);
+    let y2 = ((rect2.top - boardRect.top) / currentScale) + ((rect2.height / currentScale) / 2);
+    
     let lane = existingLane !== null ? existingLane : globalWireCount++;
-         
-    let dir1 = (y1 < 150) ? -1 : 1; 
-    let dir2 = (y2 < 150) ? -1 : 1; 
-         
-    let drop1 = 20 + (lane * 8);
-    let drop2 = 20 + (lane * 8);
-    let dy1 = y1 + (drop1 * dir1);
-    let dy2 = y2 + (drop2 * dir2);
-    let midx = (x1 + x2)/2;
-    let stagger = (lane %2 === 0) ? (lane * 6) : -(lane * 6);
-    midx += stagger;
-    if(Math.abs(x1 - x2) < 10) {
-        midx = x1 + 30 + (lane * 10);
+
+    // 2. Scaled Arduino Bounding Box
+    let ard = document.querySelector('.arduino-device');
+    let aRect = ard.getBoundingClientRect();
+    let aLeft = (aRect.left - boardRect.left) / currentScale;
+    let aRight = (aRect.right - boardRect.left) / currentScale;
+    let aTop = ((aRect.top - boardRect.top) / currentScale) - 20; 
+    let aBot = ((aRect.bottom - boardRect.top) / currentScale) + 20;
+
+    // 3. Determine Exit Directions 
+    let dir1 = (pin1.closest('.arduino-device') && parseInt(pin1.style.top) < 200) ? -1 : 1;
+    let dir2 = (pin2.closest('.arduino-device') && parseInt(pin2.style.top) < 200) ? -1 : 1;
+    
+    // Create "Escape Points" that push the wire safely away from the pin before turning.
+    // If exiting UP, we route to aTop. If DOWN, we route to aBot.
+    let escY1 = (dir1 === -1) ? (aTop - (lane * 8)) : (aBot + (lane * 8));
+    let escY2 = (dir2 === -1) ? (aTop - (lane * 8)) : (aBot + (lane * 8));
+    
+    // Override escape points for components so they don't jump all the way across the screen unnecessarily
+    if (!pin1.closest('.arduino-device')) escY1 = y1 + 40 + (lane * 8);
+    if (!pin2.closest('.arduino-device')) escY2 = y2 + 40 + (lane * 8);
+
+    // 4. Smart Perimeter Routing (Find a safe vertical channel to route between)
+    let vChannelX;
+    if (x1 < aLeft && x2 < aLeft) {
+        // Both pins are on the left, route around their leftmost point
+        vChannelX = Math.min(x1, x2) - 40 - (lane * 8);
+    } else if (x1 > aRight && x2 > aRight) {
+        // Both pins are on the right, route around their rightmost point
+        vChannelX = Math.max(x1, x2) + 40 + (lane * 8);
+    } else {
+        // Wires cross the board, route around the nearest Arduino edge
+        let avgX = (x1 + x2) / 2;
+        let aMidX = (aLeft + aRight) / 2;
+        vChannelX = (avgX < aMidX) ? (aLeft - 40 - (lane * 8)) : (aRight + 40 + (lane * 8));
     }
-    let pathString = `M ${x1} ${y1} V ${dy1} H ${midx} V ${dy2} H ${x2} V ${y2}`; 
+
+    // 5. Construct the Orthogonal Avoidance Path
+    let pathString = `M ${x1} ${y1} V ${escY1} H ${vChannelX} V ${escY2} H ${x2} V ${y2}`;
 
     let existingWire = document.getElementById(`wire-${pin1.id}-${pin2.id}`);
     if (existingWire) {
         existingWire.querySelector('path').setAttribute('d', pathString);
         return;
     }
+    
     let container = document.createElement('div');
     container.id = `wire-${pin1.id}-${pin2.id}`;
     container.className = 'wire-group';
@@ -221,34 +302,37 @@ function drawWire(pin1, pin2, existingLane = null) {
     svg.setAttribute('height', '100%');
     svg.style.overflow = 'visible';
     let path = document.createElementNS(xmlns, "path");
+    
+    // Dynamic Jumper Wire Colors
+    const wireColors = ['#00ff66', '#ff0055', '#00d5ff', '#ffcc00', '#ff00ff', '#ffffff'];
+    let wireColor = wireColors[lane % wireColors.length];
+
     path.setAttribute('d', pathString);
     path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', '#00ff66');
+    path.setAttribute('stroke', wireColor);
     path.setAttribute('stroke-width', '4');
     path.setAttribute('stroke-linejoin', 'round');
     path.setAttribute('stroke-linecap', 'round');
-    path.style.filter = 'drop-shadow(0px 0px 4px rgba(0, 255, 102, 0.8))';
+    path.style.filter = `drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.8))`;
     path.style.cursor = 'pointer';
     path.style.pointerEvents = 'auto';
 
     path.addEventListener('click', function(e) {
         e.stopPropagation();
-
         if (selectedWirePath) {
-            selectedWirePath.style.stroke = '#00ff66';
+            selectedWirePath.style.strokeDasharray = 'none'; // Un-select previous
         }
-
         selectedWirePath = path;
-        selectedWirePath.style.stroke = '#ff0055';
-
+        selectedWirePath.style.strokeDasharray = '10, 10'; // Dashed line = selected
         monitor.innerHTML = `> [SYSTEM]: Wire selected. Press 'Delete' or 'Backspace' to detach.`;
     });
 
     svg.appendChild(path);
     container.appendChild(svg);
     board.appendChild(container);
-} 
+}
 
+// Preserved logic: Delete the selected wire
 document.addEventListener('keydown', function(e) {
     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedWirePath) {
         let wireContainer = selectedWirePath.closest('.wire-group');
@@ -262,19 +346,20 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// New logic: Deselect wire when clicking the background
 document.addEventListener('click', function(e) {
     if (selectedWirePath) {
-        selectedWirePath.style.stroke = '#00ff55';
+        selectedWirePath.style.strokeDasharray = 'none'; // Reset to solid line
         selectedWirePath = null;
         monitor.innerHTML = `>[SYSTEM]: Wire deselected. Click two pins to connect them.`;
     }
 });
 
-
-
 function drag(element) {
     let isdragging = false;
     let startx, starty, initialleft, initialtop;
+    const SNAP_GRID = 20; // Locks everything to 20px intervals
+
     element.addEventListener('mousedown', function(e){
         if (e.target.classList.contains('pin')) return;
         isdragging = true;
@@ -288,10 +373,18 @@ function drag(element) {
     
     document.addEventListener('mousemove', function(e) {
         if (!isdragging) return;
-        let dx = e.clientX - startx;
-        let dy = e.clientY - starty;
-        element.style.left = (initialleft + dx) + 'px';
-        element.style.top = (initialtop + dy) + 'px';
+        
+        // Divide mouse movement by scale so it tracks perfectly with the cursor
+        let dx = (e.clientX - startx) / currentScale;
+        let dy = (e.clientY - starty) / currentScale;
+        
+        let newLeft = Math.round((initialleft + dx) / SNAP_GRID) * SNAP_GRID;
+        let newTop = Math.round((initialtop + dy) / SNAP_GRID) * SNAP_GRID;
+
+        element.style.left = newLeft + 'px';
+        element.style.top = newTop + 'px';
+        
+        // Redraw wires dynamically as objects move
         activeWires.forEach(wire => {
             drawWire(wire.pin1, wire.pin2, wire.lane);
         });
@@ -299,8 +392,8 @@ function drag(element) {
     
     document.addEventListener('mouseup', function() {
         if (isdragging) {
-            isdragging = false
-            element.style.zIndex = '';
+            isdragging = false;
+            element.style.zIndex = '5';
             element.style.cursor = 'grab';
         }
     });
@@ -325,8 +418,8 @@ addBtn.addEventListener('click', function() {
         let newLed = document.createElement('div');
         newLed.className = 'component led-component led-red'; 
         newLed.id = compId;
-        newLed.style.left = '50px';
-        newLed.style.top = '50px';
+        newLed.style.left = '1600px';
+        newLed.style.top = '1700px';
         newLed.dataset.type = 'led'; // Used to filter the right-click menu
 
         let anode = document.createElement('div');
@@ -370,8 +463,8 @@ addBtn.addEventListener('click', function() {
         let newBtn = document.createElement('div');
         newBtn.className = 'component button-component';
         newBtn.id = compId;
-        newBtn.style.left = '120px';
-        newBtn.style.top = '120px';
+        newBtn.style.left = '1600px';
+        newBtn.style.top = '1800px';
         newBtn.dataset.type = 'button';
 
         let btnCenter = document.createElement('div');
@@ -427,8 +520,8 @@ addBtn.addEventListener('click', function() {
         let newServo = document.createElement('div');
         newServo.className = 'component servo-component';
         newServo.id = compId;
-        newServo.style.left = '200px';
-        newServo.style.top = '200px';
+        newServo.style.left = '1600px';
+        newServo.style.top = '1900px';
         newServo.dataset.type = 'servo';
 
         let horn = document.createElement('div');

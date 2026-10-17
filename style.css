@@ -23,24 +23,73 @@ h1 {
     color: #00d5ff;
 }
 
+/* The Viewport (Acts as the camera window) */
 #board_div {
+    width: 100%;
+    height: 600px;
+    background-color: #0a0f1c;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #00d5ff;
+}
+
+/* The Infinite Grid Workspace (4000x4000) */
+#board {
+    width: 4000px;
+    height: 4000px;
+    position: absolute;
+    transform-origin: 0 0;
+    background-color: #0f172a;
+    background-image: 
+        linear-gradient(rgba(0, 213, 255, 0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 213, 255, 0.15) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Floating Zoom Buttons */
+#zoom-controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 8px;
+}
+
+#zoom-controls button {
+    width: 40px;
+    height: 40px;
+    background-color: #17213d;
+    color: #00d5ff;
+    border: 2px solid #00d5ff;
+    border-radius: 8px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #17213d;
-    border-radius: 12px;
-    padding: 40px;
-    min-height: 400px;
+    transition: all 0.2s;
 }
 
-#board {
+#zoom-controls button:hover {
+    background-color: #00d5ff;
+    color: #17213d;
+}
+
+/* The Movable Arduino Board */
+.arduino-device {
     width: 600px;
     height: 420px;
-    position: relative;
+    position: absolute;
     background-image: url('arduino.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    cursor: grab;
+    z-index: 5;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 #toggle {
